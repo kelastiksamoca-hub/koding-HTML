@@ -7,7 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
+        
+        /* Dark Mode Styles (Default) */
+        .dark-mode { background-color: #09090b; color: #f4f4f5; }
+        .dark-mode .bg-main { background-color: #18181b; }
+        .dark-mode .border-main { border-color: #27272a; }
+        .dark-mode .text-muted { color: #a1a1aa; }
+        .dark-mode .editor-textarea { color: #d4d4d4; }
+        .dark-mode .tab-inactive { color: #71717a; }
+
+        /* Light Mode Styles */
+        .light-mode { background-color: #ffffff; color: #18181b; }
+        .light-mode .bg-main { background-color: #f4f4f5; }
+        .light-mode .border-main { border-color: #e4e4e7; }
+        .light-mode .text-muted { color: #71717a; }
+        .light-mode .editor-textarea { color: #18181b; background-color: #ffffff; }
+        .light-mode .tab-inactive { color: #a1a1aa; }
+        .light-mode nav { background-color: #f8fafc; border-color: #e2e8f0; }
+        .light-mode footer { background-color: #f8fafc; border-color: #e2e8f0; }
+        .light-mode #editorPane { border-color: #e2e8f0; }
+        .light-mode .bg-zinc-900\/50 { background-color: #f1f5f9; }
+
         .editor-container {
             position: relative;
             flex: 1;
@@ -18,7 +39,6 @@
             height: 100%;
             padding: 1rem;
             background: transparent;
-            color: #d4d4d4;
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
             outline: none;
@@ -30,7 +50,6 @@
         .tab-active {
             border-bottom: 2px solid #3b82f6;
             color: #3b82f6;
-            background-color: rgba(24, 24, 27, 0.5);
         }
         iframe {
             background-color: white;
@@ -49,16 +68,21 @@
             max-height: 200px;
             overflow-y: auto;
         }
+        .light-mode #suggestionBox {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
         .suggestion-item {
             padding: 0.6rem 1rem;
             cursor: pointer;
             font-size: 13px;
-            color: #a1a1aa;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #27272a;
         }
+        .light-mode .suggestion-item { border-bottom-color: #f1f5f9; color: #4b5563; }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover {
             background: #3b82f6;
@@ -74,10 +98,10 @@
         }
     </style>
 </head>
-<body class="bg-zinc-950 text-zinc-100 h-screen flex flex-col overflow-hidden">
+<body class="dark-mode h-screen flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <nav class="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900">
+    <nav class="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900 transition-colors">
         <div class="flex items-center gap-4">
             <div class="flex items-center gap-2">
                 <div class="bg-blue-600 p-1.5 rounded-lg text-white">
@@ -108,6 +132,11 @@
         </div>
 
         <div class="flex items-center gap-2">
+            <!-- Theme Toggle Button -->
+            <button onclick="toggleTheme()" id="themeBtn" class="p-2 rounded-md border border-zinc-700 hover:bg-zinc-800 transition-all text-zinc-400">
+                <i id="themeIcon" data-lucide="moon" size="18"></i>
+            </button>
+
             <button onclick="sendToGoogleDrive()" id="btnDrive" class="flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium bg-zinc-100 text-zinc-900 hover:bg-white transition-all">
                 <i data-lucide="cloud-upload" size="14"></i>
                 <span class="hidden md:inline">Ke Drive</span>
@@ -120,11 +149,11 @@
 
     <!-- Main -->
     <main class="flex-1 flex overflow-hidden">
-        <div class="flex flex-col border-r border-zinc-800 w-1/2 relative" id="editorPane">
-            <div class="flex bg-zinc-900/50 p-1 gap-1 border-b border-zinc-800">
+        <div class="flex flex-col border-r border-zinc-800 w-1/2 relative transition-colors" id="editorPane">
+            <div class="flex bg-zinc-900/50 p-1 gap-1 border-b border-zinc-800 transition-colors" id="tabBar">
                 <button onclick="switchTab('html')" id="tab-html" class="tab-active px-4 py-2 text-xs font-semibold rounded-t-lg transition-all">index.html</button>
-                <button onclick="switchTab('css')" id="tab-css" class="px-4 py-2 text-xs font-semibold rounded-t-lg transition-all text-zinc-500">styles.css</button>
-                <button onclick="switchTab('js')" id="tab-js" class="px-4 py-2 text-xs font-semibold rounded-t-lg transition-all text-zinc-500">script.js</button>
+                <button onclick="switchTab('css')" id="tab-css" class="px-4 py-2 text-xs font-semibold rounded-t-lg transition-all tab-inactive">styles.css</button>
+                <button onclick="switchTab('js')" id="tab-js" class="px-4 py-2 text-xs font-semibold rounded-t-lg transition-all tab-inactive">script.js</button>
             </div>
 
             <div class="editor-container bg-zinc-900/20">
@@ -136,7 +165,7 @@
         </div>
 
         <div class="flex-1 flex flex-col bg-white">
-            <div class="bg-zinc-100 px-4 py-1.5 text-[10px] text-zinc-500 flex justify-between border-b border-zinc-200 font-bold uppercase">
+            <div class="bg-zinc-100 px-4 py-1.5 text-[10px] text-zinc-500 flex justify-between border-b border-zinc-200 font-bold uppercase transition-colors" id="previewHeader">
                 <span>Live Preview</span>
                 <span id="previewIdentity">5-A | Absen: 1</span>
             </div>
@@ -144,7 +173,7 @@
         </div>
     </main>
 
-    <footer class="px-4 py-2 border-t border-zinc-800 bg-zinc-900 flex items-center justify-between text-xs text-zinc-500">
+    <footer class="px-4 py-2 border-t border-zinc-800 bg-zinc-900 flex items-center justify-between text-xs text-zinc-500 transition-colors">
         <div class="flex gap-4">
             <span id="saveStatus">Ketik kodingmu dan tekan Jalankan</span>
         </div>
@@ -168,6 +197,24 @@
             js: document.getElementById('jsEditor')
         };
         const suggestionBox = document.getElementById('suggestionBox');
+
+        // Theme Toggle Logic
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('themeIcon');
+            const themeBtn = document.getElementById('themeBtn');
+            
+            if (body.classList.contains('dark-mode')) {
+                body.classList.replace('dark-mode', 'light-mode');
+                icon.setAttribute('data-lucide', 'sun');
+                themeBtn.classList.replace('text-zinc-400', 'text-amber-500');
+            } else {
+                body.classList.replace('light-mode', 'dark-mode');
+                icon.setAttribute('data-lucide', 'moon');
+                themeBtn.classList.replace('text-amber-500', 'text-zinc-400');
+            }
+            lucide.createIcons();
+        }
 
         const absentSelect = document.getElementById('absentSelect');
         for (let i = 1; i <= 40; i++) {
@@ -195,32 +242,23 @@
                 const currentIndent = getCurrentLineIndent(value, pos);
                 const standardIndent = "  ";
 
-                // Logika pasangan pembuka-penutup yang didukung
                 const pairs = [
-                    ['>', '<'], // HTML
-                    ['{', '}'], // CSS / JS
-                    ['(', ')'], // JS
-                    ['[', ']']  // JS
+                    ['>', '<'], 
+                    ['{', '}'], 
+                    ['(', ')'], 
+                    ['[', ']']  
                 ];
 
                 const isBetweenPair = pairs.some(p => charBefore === p[0] && charAfter === p[1]);
 
                 if (isBetweenPair) {
                     e.preventDefault();
-                    
-                    const newValue = value.substring(0, pos) + 
-                                     "\n" + currentIndent + standardIndent + 
-                                     "\n" + currentIndent + 
-                                     value.substring(pos);
-                    
+                    const newValue = value.substring(0, pos) + "\n" + currentIndent + standardIndent + "\n" + currentIndent + value.substring(pos);
                     editor.value = newValue;
-                    
-                    // Pindahkan kursor ke baris tengah yang baru dibuat
                     const newPos = pos + currentIndent.length + standardIndent.length + 1;
                     editor.selectionStart = editor.selectionEnd = newPos;
                     runCode();
                 } else {
-                    // Pertahankan indentasi baris sebelumnya saat Enter biasa
                     e.preventDefault();
                     const newValue = value.substring(0, pos) + "\n" + currentIndent + value.substring(pos);
                     editor.value = newValue;
@@ -298,10 +336,12 @@
 
         function switchTab(tab) {
             Object.values(editors).forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.remove('tab-active', 'text-zinc-500'));
+            document.querySelectorAll('[onclick^="switchTab"]').forEach(el => el.classList.remove('tab-active'));
+            document.querySelectorAll('[onclick^="switchTab"]').forEach(el => el.classList.add('tab-inactive'));
+            
             editors[tab].classList.remove('hidden');
             document.getElementById('tab-' + tab).classList.add('tab-active');
-            ['html', 'css', 'js'].forEach(t => { if(t !== tab) document.getElementById('tab-' + t).classList.add('text-zinc-500'); });
+            document.getElementById('tab-' + tab).classList.remove('tab-inactive');
             hideSuggestions();
         }
 
