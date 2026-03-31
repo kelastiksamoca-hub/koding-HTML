@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KodingAcademy - Editor HTML Interaktif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .editor-container {
+            position: relative;
+            flex: 1;
+            overflow: hidden;
+        }
+        .editor-textarea {
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            background: transparent;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            outline: none;
+            resize: none;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-wrap: normal;
+        }
+        .tab-active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+            background-color: rgba(24, 24, 27, 0.5);
+        }
+        iframe {
+            background-color: white;
+            width: 100%;
+            height: 100%;
+        }
+        #suggestionBox {
+            position: absolute;
+            background: #18181b;
+            border: 1px solid #3f3f46;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            display: none;
+            min-width: 180px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .suggestion-item {
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            font-size: 13px;
+            color: #a1a1aa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #27272a;
+        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover {
+            background: #3b82f6;
+            color: white;
+        }
+        .suggestion-type {
+            font-size: 10px;
+            text-transform: uppercase;
+            opacity: 0.6;
+            background: rgba(0,0,0,0.2);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <nav class="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900">
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 p-1.5 rounded-lg text-white">
+                    <i data-lucide="code-2" size="20"></i>
+                </div>
+                <h1 class="font-bold tracking-tight hidden md:block">KodingAcademy</h1>
+            </div>
+
+            <div class="flex items-center gap-2 px-3 py-1 rounded-md border border-zinc-700 bg-zinc-800/50">
+                <i data-lucide="edit-3" size="14" class="text-zinc-500"></i>
+                <input id="projectName" type="text" value="Projek Baru" class="bg-transparent outline-none text-sm font-medium w-32">
+            </div>
+
+            <div class="flex items-center gap-2 px-2 py-1 rounded-md border border-zinc-700 bg-zinc-800/50">
+                <i data-lucide="graduation-cap" size="14" class="text-zinc-500"></i>
+                <select id="classSelect" class="bg-transparent outline-none text-xs font-medium cursor-pointer">
+                    <option value="5-A">5-A</option>
+                    <option value="5-B">5-B</option>
+                    <option value="5-C">5-C</option>
+                    <option value="5-D">5-D</option>
+                </select>
+            </div>
+
+            <div class="flex items-center gap-2 px-2 py-1 rounded-md border border-zinc-700 bg-zinc-800/50">
+                <i data-lucide="user-circle" size="14" class="text-zinc-500"></i>
+                <select id="absentSelect" class="bg-transparent outline-none text-xs font-medium cursor-pointer w-12"></select>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button onclick="sendToGoogleDrive()" id="btnDrive" class="flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium bg-zinc-100 text-zinc-900 hover:bg-white transition-all">
+                <i data-lucide="cloud-upload" size="14"></i>
+                <span class="hidden md:inline">Ke Drive</span>
+            </button>
+            <button onclick="runCode()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-sm font-medium shadow-lg">
+                <i data-lucide="play" size="14"></i> <span class="hidden sm:inline">Jalankan</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="flex-1 flex overflow-hidden">
+        <div class="flex flex-col border-r border-zinc-800 w-1/2 relative" id="editorPane">
+            <div class="flex bg-zinc-900/50 p-1 gap-1 border-b border-zinc-800">
+                <button onclick="switchTab('html')" id="tab-html" class="tab-active px-4 py-2 text-xs font-semibold rounded-t-lg transition-all">index.html</button>
+                <button onclick="switchTab('css')" id="tab-css" class="px-4 py-2 text-xs font-semibold rounded-t-lg transition-all text-zinc-500">styles.css</button>
+                <button onclick="switchTab('js')" id="tab-js" class="px-4 py-2 text-xs font-semibold rounded-t-lg transition-all text-zinc-500">script.js</button>
+            </div>
+
+            <div class="editor-container bg-zinc-900/20">
+                <div id="suggestionBox"></div>
+                <textarea id="htmlEditor" class="editor-textarea" placeholder="Ketik HTML..."></textarea>
+                <textarea id="cssEditor" class="editor-textarea hidden" placeholder="Ketik CSS..."></textarea>
+                <textarea id="jsEditor" class="editor-textarea hidden" placeholder="Ketik JavaScript..."></textarea>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col bg-white">
+            <div class="bg-zinc-100 px-4 py-1.5 text-[10px] text-zinc-500 flex justify-between border-b border-zinc-200 font-bold uppercase">
+                <span>Live Preview</span>
+                <span id="previewIdentity">5-A | Absen: 1</span>
+            </div>
+            <iframe id="previewIframe"></iframe>
+        </div>
+    </main>
+
+    <footer class="px-4 py-2 border-t border-zinc-800 bg-zinc-900 flex items-center justify-between text-xs text-zinc-500">
+        <div class="flex gap-4">
+            <span id="saveStatus">Ketik kodingmu dan tekan Jalankan</span>
+        </div>
+        <button onclick="downloadFile()" class="flex items-center gap-2 text-blue-500 hover:text-blue-400">
+            <i data-lucide="download" size="14"></i> Download File
+        </button>
+    </footer>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxILvtVwh9HMxNBtyKQ0sTuvj0l1RBAKibU9d9zb0rXCX8nyh2GUbWHV36mvsFGNivXCw/exec";
+        
+        const SUGGESTIONS = {
+            html: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span', 'a', 'img', 'button', 'input', 'form', 'label', 'ul', 'li', 'ol', 'section', 'header', 'footer', 'nav', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'br', 'hr', 'strong', 'em', 'iframe', 'canvas', 'svg', 'main', 'aside'],
+            css: ['background-color', 'background-image', 'border', 'border-radius', 'color', 'display', 'flex', 'font-family', 'font-size', 'font-weight', 'height', 'justify-content', 'align-items', 'margin', 'padding', 'position', 'text-align', 'text-decoration', 'width', 'z-index', 'cursor', 'opacity', 'overflow', 'transition', 'box-shadow']
+        };
+
+        const editors = {
+            html: document.getElementById('htmlEditor'),
+            css: document.getElementById('cssEditor'),
+            js: document.getElementById('jsEditor')
+        };
+        const suggestionBox = document.getElementById('suggestionBox');
+
+        const absentSelect = document.getElementById('absentSelect');
+        for (let i = 1; i <= 40; i++) {
+            const opt = document.createElement('option');
+            opt.value = i; opt.innerHTML = i;
+            absentSelect.appendChild(opt);
+        }
+
+        function getCurrentLineIndent(text, pos) {
+            const lines = text.substring(0, pos).split('\n');
+            const currentLine = lines[lines.length - 1];
+            const match = currentLine.match(/^\s*/);
+            return match ? match[0] : "";
+        }
+
+        function handleEnterKey(e, type) {
+            if (e.key === 'Enter') {
+                const editor = e.target;
+                const pos = editor.selectionStart;
+                const value = editor.value;
+                
+                const charBefore = value.substring(pos - 1, pos);
+                const charAfter = value.substring(pos, pos + 1);
+                
+                const currentIndent = getCurrentLineIndent(value, pos);
+                const standardIndent = "  ";
+
+                // Logika pasangan pembuka-penutup yang didukung
+                const pairs = [
+                    ['>', '<'], // HTML
+                    ['{', '}'], // CSS / JS
+                    ['(', ')'], // JS
+                    ['[', ']']  // JS
+                ];
+
+                const isBetweenPair = pairs.some(p => charBefore === p[0] && charAfter === p[1]);
+
+                if (isBetweenPair) {
+                    e.preventDefault();
+                    
+                    const newValue = value.substring(0, pos) + 
+                                     "\n" + currentIndent + standardIndent + 
+                                     "\n" + currentIndent + 
+                                     value.substring(pos);
+                    
+                    editor.value = newValue;
+                    
+                    // Pindahkan kursor ke baris tengah yang baru dibuat
+                    const newPos = pos + currentIndent.length + standardIndent.length + 1;
+                    editor.selectionStart = editor.selectionEnd = newPos;
+                    runCode();
+                } else {
+                    // Pertahankan indentasi baris sebelumnya saat Enter biasa
+                    e.preventDefault();
+                    const newValue = value.substring(0, pos) + "\n" + currentIndent + value.substring(pos);
+                    editor.value = newValue;
+                    editor.selectionStart = editor.selectionEnd = pos + currentIndent.length + 1;
+                    runCode();
+                }
+            }
+        }
+
+        Object.keys(editors).forEach(type => {
+            editors[type].addEventListener('keydown', (e) => handleEnterKey(e, type));
+            editors[type].addEventListener('input', () => {
+                handleSuggest(type);
+                runCode();
+            });
+            editors[type].addEventListener('click', () => hideSuggestions());
+        });
+
+        function handleSuggest(type) {
+            if (type === 'js') return;
+            const editor = editors[type];
+            const textBefore = editor.value.substring(0, editor.selectionStart);
+            let query = '';
+            let triggerPos = -1;
+
+            if (type === 'html') {
+                triggerPos = textBefore.lastIndexOf('<');
+                if (triggerPos !== -1 && triggerPos >= textBefore.lastIndexOf('>')) {
+                    query = textBefore.substring(triggerPos + 1).toLowerCase();
+                }
+            } else if (type === 'css') {
+                const lines = textBefore.split(/\n|;|{/);
+                const lastLine = lines[lines.length - 1].trimStart();
+                query = lastLine.toLowerCase();
+                triggerPos = editor.selectionStart - query.length;
+            }
+
+            if (query.length > 0 || (type === 'html' && textBefore.endsWith('<'))) {
+                const matches = SUGGESTIONS[type].filter(item => item.startsWith(query));
+                if (matches.length > 0) showSuggestions(matches, triggerPos, type);
+                else hideSuggestions();
+            } else hideSuggestions();
+        }
+
+        function showSuggestions(list, startPos, type) {
+            suggestionBox.innerHTML = '';
+            list.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `<span>${item}</span> <span class="suggestion-type">${type}</span>`;
+                div.onclick = () => applySuggestion(item, startPos, type);
+                suggestionBox.appendChild(div);
+            });
+            suggestionBox.style.display = 'block';
+            suggestionBox.style.left = '10px';
+            suggestionBox.style.top = '40px';
+        }
+
+        function hideSuggestions() { suggestionBox.style.display = 'none'; }
+
+        function applySuggestion(item, startPos, type) {
+            const editor = editors[type];
+            const value = editor.value;
+            const endPos = editor.selectionStart;
+            const before = value.substring(0, startPos);
+            const after = value.substring(endPos);
+            let insertText = (type === 'html') ? `<${item}></${item}>` : `${item}: ;`;
+            let cursorOffset = (type === 'html') ? item.length + 2 : item.length + 2;
+            editor.value = before + insertText + after;
+            hideSuggestions();
+            editor.focus();
+            editor.setSelectionRange(startPos + cursorOffset, startPos + cursorOffset);
+            runCode();
+        }
+
+        function switchTab(tab) {
+            Object.values(editors).forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.remove('tab-active', 'text-zinc-500'));
+            editors[tab].classList.remove('hidden');
+            document.getElementById('tab-' + tab).classList.add('tab-active');
+            ['html', 'css', 'js'].forEach(t => { if(t !== tab) document.getElementById('tab-' + t).classList.add('text-zinc-500'); });
+            hideSuggestions();
+        }
+
+        function runCode() {
+            const iframe = document.getElementById('previewIframe');
+            iframe.srcdoc = `<!DOCTYPE html><html><head><style>${editors.css.value}</style></head><body>${editors.html.value}<script>try{${editors.js.value}}catch(e){console.error(e)}<\/script></body></html>`;
+            document.getElementById('previewIdentity').innerText = `${document.getElementById('classSelect').value} | Absen: ${document.getElementById('absentSelect').value}`;
+        }
+
+        async function sendToGoogleDrive() {
+            const btn = document.getElementById('btnDrive');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = 'Mengirim...';
+            const payload = { projectName: document.getElementById('projectName').value, html: editors.html.value, css: editors.css.value, js: editors.js.value, class: document.getElementById('classSelect').value, absent: document.getElementById('absentSelect').value };
+            try {
+                await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                btn.classList.replace('bg-zinc-100', 'bg-green-600'); btn.classList.add('text-white'); btn.innerHTML = 'Terkirim!';
+                setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.replace('bg-green-600', 'bg-zinc-100'); btn.classList.remove('text-white'); btn.disabled = false; }, 3000);
+            } catch (err) { btn.innerHTML = 'Gagal!'; setTimeout(() => { btn.innerHTML = originalHTML; btn.disabled = false; }, 3000); }
+        }
+
+        function downloadFile() {
+            const content = `<!DOCTYPE html><html><head><style>${editors.css.value}</style></head><body>${editors.html.value}<script>${editors.js.value}<\/script></body></html>`;
+            const blob = new Blob([content], {type: 'text/html'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${document.getElementById('classSelect').value}_${document.getElementById('absentSelect').value}_${document.getElementById('projectName').value}.html`; a.click();
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
