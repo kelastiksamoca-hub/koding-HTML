@@ -40,7 +40,7 @@
             padding: 1rem;
             background: transparent;
             font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
+            font-size: 14px; /* Default size */
             outline: none;
             resize: none;
             line-height: 1.5;
@@ -129,6 +129,19 @@
                 <i data-lucide="user-circle" size="14" class="text-zinc-500"></i>
                 <select id="absentSelect" class="bg-transparent outline-none text-xs font-medium cursor-pointer w-12"></select>
             </div>
+
+            <!-- Font Size Control -->
+            <div class="flex items-center gap-2 px-2 py-1 rounded-md border border-zinc-700 bg-zinc-800/50">
+                <i data-lucide="type" size="14" class="text-zinc-500"></i>
+                <select id="fontSizeSelect" onchange="updateFontSize()" class="bg-transparent outline-none text-xs font-medium cursor-pointer">
+                    <option value="12px">12px</option>
+                    <option value="14px" selected>14px</option>
+                    <option value="16px">16px</option>
+                    <option value="18px">18px</option>
+                    <option value="20px">20px</option>
+                    <option value="24px">24px</option>
+                </select>
+            </div>
         </div>
 
         <div class="flex items-center gap-2">
@@ -197,6 +210,14 @@
             js: document.getElementById('jsEditor')
         };
         const suggestionBox = document.getElementById('suggestionBox');
+
+        // Update Font Size
+        function updateFontSize() {
+            const size = document.getElementById('fontSizeSelect').value;
+            Object.values(editors).forEach(editor => {
+                editor.style.fontSize = size;
+            });
+        }
 
         // Theme Toggle Logic
         function toggleTheme() {
