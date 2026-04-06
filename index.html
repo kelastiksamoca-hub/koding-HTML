@@ -43,7 +43,6 @@
             height: 100%;
             padding: 1rem;
             background: transparent;
-            /* Default font */
             font-family: 'JetBrains Mono', monospace;
             outline: none;
             resize: none;
@@ -124,9 +123,40 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #44403c; border-radius: 4px; }
         .light-mode ::-webkit-scrollbar-thumb { background: #d6d3d1; }
+
+        /* Fullscreen Overlay Notification */
+        #fullscreenNotice {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body class="dark-mode h-screen flex flex-col overflow-hidden">
+
+    <!-- Overlay untuk memicu Full Screen -->
+    <div id="fullscreenNotice">
+        <div class="bg-stone-900 border border-stone-700 p-8 rounded-2xl shadow-2xl max-w-sm flex flex-col items-center gap-6">
+            <div class="bg-yellow-400 p-4 rounded-full text-stone-950">
+                <i data-lucide="maximize" size="48"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold mb-2">Siap Belajar?</h2>
+                <p class="text-stone-400 text-sm">Klik di bawah untuk masuk ke mode Layar Penuh agar koding lebih fokus.</p>
+            </div>
+            <button onclick="activateFullscreen()" class="w-full bg-yellow-400 hover:bg-yellow-500 text-stone-950 py-3 rounded-xl font-bold transition-all transform active:scale-95 shadow-lg flex items-center justify-center gap-2">
+                <i data-lucide="play-circle" size="20"></i> Mulai Koding
+            </button>
+        </div>
+    </div>
 
     <!-- Header -->
     <nav class="flex items-center justify-between px-4 py-2 border-b border-stone-800 bg-stone-900 transition-colors">
@@ -146,7 +176,7 @@
 
             <!-- Font Family Select -->
             <div class="flex items-center gap-2 px-2 py-1 rounded-md border border-stone-700 bg-stone-800/50 flex-shrink-0">
-                <i data-lucide="font-size" size="14" class="text-stone-500"></i>
+                <i data-lucide="type" size="14" class="text-stone-500"></i>
                 <select id="fontFamilySelect" onchange="updateFontFace()" class="bg-transparent outline-none text-xs font-bold cursor-pointer focus:text-yellow-600 dark:focus:text-yellow-400">
                     <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
                     <option value="'Fira Code', monospace">Fira Code</option>
@@ -160,7 +190,7 @@
 
             <!-- Font Size Select -->
             <div class="flex items-center gap-2 px-2 py-1 rounded-md border border-stone-700 bg-stone-800/50 flex-shrink-0">
-                <i data-lucide="type" size="14" class="text-stone-500"></i>
+                <i data-lucide="text-cursor-input" size="14" class="text-stone-500"></i>
                 <select id="fontSizeSelect" onchange="updateFontSize()" class="bg-transparent outline-none text-xs font-bold cursor-pointer focus:text-yellow-600 dark:focus:text-yellow-400">
                     <option value="12px">12px</option>
                     <option value="14px" selected>14px</option>
@@ -168,13 +198,13 @@
                     <option value="18px">18px</option>
                     <option value="20px">20px</option>
                     <option value="24px">24px</option>
-                    <option value="26px">26px</option>
-                    <option value="28px">28px</option>
-                    <option value="30px">30px</option>
+	<option value="26px">26px</option>
+	<option value="28px">28px</option>
+	<option value="30px">30px</option>
                 </select>
             </div>
 
-            <!-- Class & Absent (Desktop only for cleanliness) -->
+            <!-- Class & Absent -->
             <div class="hidden xl:flex items-center gap-2 px-2 py-1 rounded-md border border-stone-700 bg-stone-800/50 flex-shrink-0">
                 <i data-lucide="graduation-cap" size="14" class="text-stone-500"></i>
                 <select id="classSelect" class="bg-transparent outline-none text-xs font-bold cursor-pointer focus:text-yellow-600 dark:focus:text-yellow-400">
@@ -186,6 +216,9 @@
         </div>
 
         <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+            <button onclick="toggleFullscreenManually()" class="p-2 rounded-md border border-stone-700 text-stone-400 hover:text-yellow-400 transition-colors hidden md:block" title="Layar Penuh">
+                <i data-lucide="maximize-2" size="18"></i>
+            </button>
             <button onclick="toggleTheme()" id="themeBtn" class="p-2 rounded-md border border-stone-700 hover:border-yellow-400/50 transition-all text-stone-400 hover:text-yellow-600 dark:hover:text-yellow-400">
                 <i id="themeIcon" data-lucide="moon" size="18"></i>
             </button>
@@ -284,6 +317,37 @@
             js: document.getElementById('jsEditor')
         };
         const suggestionBox = document.getElementById('suggestionBox');
+
+        // Fungsi Fullscreen
+        function activateFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
+            document.getElementById('fullscreenNotice').style.display = 'none';
+        }
+
+        function toggleFullscreenManually() {
+            if (!document.fullscreenElement) {
+                activateFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Pantau jika user keluar dari fullscreen
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                // Opsional: tampilkan tombol lagi jika ingin
+                console.log("Keluar dari Fullscreen");
+            }
+        });
 
         function updateFontSize() {
             const size = document.getElementById('fontSizeSelect').value;
