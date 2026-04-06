@@ -6,28 +6,32 @@
     <title>KodingAcademy - Editor HTML Interaktif</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.0/lucide.min.css">
+    <!-- Import Google Fonts untuk variasi font koding -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Source+Code+Pro:wght@400;500&family=Ubuntu+Mono:wght@400;700&family=Space+Mono:wght@400;700&family=Roboto+Mono:wght@400;500&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s, color 0.3s; }
         
         /* Dark Mode Styles (Default) */
-        .dark-mode { background-color: #09090b; color: #f4f4f5; }
-        .dark-mode .bg-main { background-color: #18181b; }
-        .dark-mode .border-main { border-color: #27272a; }
-        .dark-mode .text-muted { color: #a1a1aa; }
-        .dark-mode .editor-textarea { color: #d4d4d4; }
-        .dark-mode .tab-inactive { color: #71717a; }
+        .dark-mode { background-color: #0c0a09; color: #f5f5f4; }
+        .dark-mode .bg-main { background-color: #1c1917; }
+        .dark-mode .border-main { border-color: #292524; }
+        .dark-mode .text-muted { color: #a8a29e; }
+        .dark-mode .editor-textarea { color: #e7e5e4; }
+        .dark-mode .tab-inactive { color: #78716c; }
+        .dark-mode .accent-color { color: #facc15; }
 
         /* Light Mode Styles */
-        .light-mode { background-color: #ffffff; color: #18181b; }
-        .light-mode .bg-main { background-color: #f4f4f5; }
-        .light-mode .border-main { border-color: #e4e4e7; }
-        .light-mode .text-muted { color: #71717a; }
-        .light-mode .editor-textarea { color: #18181b; background-color: #ffffff; }
-        .light-mode .tab-inactive { color: #a1a1aa; }
-        .light-mode nav { background-color: #f8fafc; border-color: #e2e8f0; }
-        .light-mode footer { background-color: #f8fafc; border-color: #e2e8f0; }
-        .light-mode #editorPane { border-color: #e2e8f0; }
-        .light-mode .bg-zinc-900\/50 { background-color: #f1f5f9; }
+        .light-mode { background-color: #ffffff; color: #0c0a09; }
+        .light-mode .bg-main { background-color: #f5f5f4; }
+        .light-mode .border-main { border-color: #d6d3d1; }
+        .light-mode .text-muted { color: #57534e; }
+        .light-mode .editor-textarea { color: #0c0a09; background-color: #ffffff; }
+        .light-mode .tab-inactive { color: #78716c; }
+        .light-mode nav { background-color: #f5f5f4; border-color: #d6d3d1; }
+        .light-mode footer { background-color: #f5f5f4; border-color: #d6d3d1; }
+        .light-mode #editorPane { border-color: #d6d3d1; }
+        .light-mode #tabBar { background-color: #e7e5e4; border-color: #d6d3d1; }
+        .light-mode .tab-active { color: #854d0e; border-bottom-color: #a16207; }
 
         .editor-container {
             position: relative;
@@ -39,38 +43,67 @@
             height: 100%;
             padding: 1rem;
             background: transparent;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px; /* Default size */
+            /* Default font */
+            font-family: 'JetBrains Mono', monospace;
             outline: none;
             resize: none;
-            line-height: 1.5;
+            line-height: 1.6;
             white-space: pre;
             overflow-wrap: normal;
+            transition: font-size 0.2s, font-family 0.2s;
         }
         .tab-active {
-            border-bottom: 2px solid #3b82f6;
-            color: #3b82f6;
+            border-bottom: 2px solid #facc15;
+            color: #facc15;
+            text-shadow: 0 0 10px rgba(250, 204, 21, 0.3);
         }
+        
+        .chrome-header {
+            background-color: #e7e5e4;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        .light-mode .chrome-header { background-color: #d6d3d1; }
+        .dark-mode .chrome-header { background-color: #1c1917; }
+        
+        .chrome-tab {
+            background-color: #ffffff;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            position: relative;
+        }
+        .dark-mode .chrome-tab { background-color: #292524; color: white; }
+        .light-mode .chrome-tab { background-color: #f5f5f4; color: #0c0a09; border: 1px solid #d6d3d1; border-bottom: none; }
+        
+        .chrome-address-bar {
+            background-color: #f5f5f4;
+            border-radius: 20px;
+        }
+        .dark-mode .chrome-address-bar { background-color: #0c0a09; border: 1px solid #44403c; color: #e7e5e4; }
+        .light-mode .chrome-address-bar { background-color: #ffffff; border: 1px solid #d6d3d1; color: #44403c; }
+
         iframe {
             background-color: white;
             width: 100%;
             height: 100%;
+            border: none;
         }
+
         #suggestionBox {
             position: absolute;
-            background: #18181b;
-            border: 1px solid #3f3f46;
+            background: #1c1917;
+            border: 1px solid #44403c;
             border-radius: 0.5rem;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7);
             z-index: 100;
             display: none;
-            min-width: 180px;
-            max-height: 200px;
+            min-width: 200px;
+            max-height: 250px;
             overflow-y: auto;
         }
         .light-mode #suggestionBox {
             background: #ffffff;
-            border-color: #e2e8f0;
+            border-color: #d6d3d1;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
         .suggestion-item {
@@ -80,96 +113,103 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #27272a;
+            border-bottom: 1px solid #292524;
         }
-        .light-mode .suggestion-item { border-bottom-color: #f1f5f9; color: #4b5563; }
-        .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover {
-            background: #3b82f6;
-            color: white;
-        }
-        .suggestion-type {
-            font-size: 10px;
-            text-transform: uppercase;
-            opacity: 0.6;
-            background: rgba(0,0,0,0.2);
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
+        .light-mode .suggestion-item { border-bottom-color: #f5f5f4; color: #0c0a09; }
+        .suggestion-item:hover { background: #facc15; color: #1c1917; font-weight: bold; }
+        .suggestion-type { font-size: 10px; opacity: 0.6; font-weight: bold; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #44403c; border-radius: 4px; }
+        .light-mode ::-webkit-scrollbar-thumb { background: #d6d3d1; }
     </style>
 </head>
 <body class="dark-mode h-screen flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <nav class="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900 transition-colors">
-        <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2">
-                <div class="bg-blue-600 p-1.5 rounded-lg text-white">
+    <nav class="flex items-center justify-between px-4 py-2 border-b border-stone-800 bg-stone-900 transition-colors">
+        <div class="flex items-center gap-3 overflow-x-auto no-scrollbar">
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <div class="bg-yellow-400 p-1.5 rounded-lg text-stone-900 shadow-[0_0_15px_rgba(250,204,21,0.4)]">
                     <i data-lucide="code-2" size="20"></i>
                 </div>
-                <h1 class="font-bold tracking-tight hidden md:block">KodingAcademy</h1>
+                <h1 class="font-bold tracking-tight hidden lg:block text-yellow-500 dark:text-yellow-400">KodingAcademy</h1>
             </div>
 
-            <div class="flex items-center gap-2 px-3 py-1 rounded-md border border-zinc-700 bg-zinc-800/50">
-                <i data-lucide="edit-3" size="14" class="text-zinc-500"></i>
-                <input id="projectName" type="text" value="Projek Baru" class="bg-transparent outline-none text-sm font-medium w-32">
+            <!-- Project Name -->
+            <div class="flex items-center gap-2 px-3 py-1 rounded-md border border-stone-700 bg-stone-800/50 flex-shrink-0">
+                <i data-lucide="edit-3" size="14" class="text-stone-500"></i>
+                <input id="projectName" type="text" value="Projek Baru" class="bg-transparent outline-none text-sm font-bold w-24 md:w-32 focus:text-yellow-600 dark:focus:text-yellow-400 transition-colors">
             </div>
 
-            <div class="flex items-center gap-2 px-2 py-1 rounded-md border border-zinc-700 bg-zinc-800/50">
-                <i data-lucide="graduation-cap" size="14" class="text-zinc-500"></i>
-                <select id="classSelect" class="bg-transparent outline-none text-xs font-medium cursor-pointer">
-                    <option value="5-A">5-A</option>
-                    <option value="5-B">5-B</option>
-                    <option value="5-C">5-C</option>
-                    <option value="5-D">5-D</option>
+            <!-- Font Family Select -->
+            <div class="flex items-center gap-2 px-2 py-1 rounded-md border border-stone-700 bg-stone-800/50 flex-shrink-0">
+                <i data-lucide="font-size" size="14" class="text-stone-500"></i>
+                <select id="fontFamilySelect" onchange="updateFontFace()" class="bg-transparent outline-none text-xs font-bold cursor-pointer focus:text-yellow-600 dark:focus:text-yellow-400">
+                    <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                    <option value="'Fira Code', monospace">Fira Code</option>
+                    <option value="'Source Code Pro', monospace">Source Code Pro</option>
+                    <option value="'Ubuntu Mono', monospace">Ubuntu Mono</option>
+                    <option value="'Space Mono', monospace">Space Mono</option>
+                    <option value="'Roboto Mono', monospace">Roboto Mono</option>
+                    <option value="'Courier New', Courier, monospace">Courier New</option>
                 </select>
             </div>
 
-            <div class="flex items-center gap-2 px-2 py-1 rounded-md border border-zinc-700 bg-zinc-800/50">
-                <i data-lucide="user-circle" size="14" class="text-zinc-500"></i>
-                <select id="absentSelect" class="bg-transparent outline-none text-xs font-medium cursor-pointer w-12"></select>
-            </div>
-
-            <!-- Font Size Control -->
-            <div class="flex items-center gap-2 px-2 py-1 rounded-md border border-zinc-700 bg-zinc-800/50">
-                <i data-lucide="type" size="14" class="text-zinc-500"></i>
-                <select id="fontSizeSelect" onchange="updateFontSize()" class="bg-transparent outline-none text-xs font-medium cursor-pointer">
+            <!-- Font Size Select -->
+            <div class="flex items-center gap-2 px-2 py-1 rounded-md border border-stone-700 bg-stone-800/50 flex-shrink-0">
+                <i data-lucide="type" size="14" class="text-stone-500"></i>
+                <select id="fontSizeSelect" onchange="updateFontSize()" class="bg-transparent outline-none text-xs font-bold cursor-pointer focus:text-yellow-600 dark:focus:text-yellow-400">
                     <option value="12px">12px</option>
                     <option value="14px" selected>14px</option>
                     <option value="16px">16px</option>
                     <option value="18px">18px</option>
                     <option value="20px">20px</option>
                     <option value="24px">24px</option>
+                    <option value="26px">26px</option>
+                    <option value="28px">28px</option>
+                    <option value="30px">30px</option>
                 </select>
+            </div>
+
+            <!-- Class & Absent (Desktop only for cleanliness) -->
+            <div class="hidden xl:flex items-center gap-2 px-2 py-1 rounded-md border border-stone-700 bg-stone-800/50 flex-shrink-0">
+                <i data-lucide="graduation-cap" size="14" class="text-stone-500"></i>
+                <select id="classSelect" class="bg-transparent outline-none text-xs font-bold cursor-pointer focus:text-yellow-600 dark:focus:text-yellow-400">
+                    <option value="5-A">5-A</option><option value="5-B">5-B</option><option value="5-C">5-C</option><option value="5-D">5-D</option>
+                </select>
+                <span class="text-stone-600">|</span>
+                <select id="absentSelect" class="bg-transparent outline-none text-xs font-bold cursor-pointer w-10 focus:text-yellow-600 dark:focus:text-yellow-400"></select>
             </div>
         </div>
 
-        <div class="flex items-center gap-2">
-            <!-- Theme Toggle Button -->
-            <button onclick="toggleTheme()" id="themeBtn" class="p-2 rounded-md border border-zinc-700 hover:bg-zinc-800 transition-all text-zinc-400">
+        <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+            <button onclick="toggleTheme()" id="themeBtn" class="p-2 rounded-md border border-stone-700 hover:border-yellow-400/50 transition-all text-stone-400 hover:text-yellow-600 dark:hover:text-yellow-400">
                 <i id="themeIcon" data-lucide="moon" size="18"></i>
             </button>
-
-            <button onclick="sendToGoogleDrive()" id="btnDrive" class="flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-medium bg-zinc-100 text-zinc-900 hover:bg-white transition-all">
+            <button onclick="sendToGoogleDrive()" id="btnDrive" class="flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-bold bg-stone-800 text-white dark:bg-stone-100 dark:text-stone-900 hover:bg-yellow-500 transition-all shadow-sm">
                 <i data-lucide="cloud-upload" size="14"></i>
-                <span class="hidden md:inline">Ke Drive</span>
+                <span class="hidden sm:inline">Ke Drive</span>
             </button>
-            <button onclick="runCode()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-sm font-medium shadow-lg">
+            <button onclick="runCode()" class="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-stone-950 px-4 py-1.5 rounded-md text-sm font-bold shadow-md transition-all transform active:scale-95">
                 <i data-lucide="play" size="14"></i> <span class="hidden sm:inline">Jalankan</span>
             </button>
         </div>
     </nav>
 
     <!-- Main -->
-    <main class="flex-1 flex overflow-hidden">
-        <div class="flex flex-col border-r border-zinc-800 w-1/2 relative transition-colors" id="editorPane">
-            <div class="flex bg-zinc-900/50 p-1 gap-1 border-b border-zinc-800 transition-colors" id="tabBar">
-                <button onclick="switchTab('html')" id="tab-html" class="tab-active px-4 py-2 text-xs font-semibold rounded-t-lg transition-all">index.html</button>
-                <button onclick="switchTab('css')" id="tab-css" class="px-4 py-2 text-xs font-semibold rounded-t-lg transition-all tab-inactive">styles.css</button>
-                <button onclick="switchTab('js')" id="tab-js" class="px-4 py-2 text-xs font-semibold rounded-t-lg transition-all tab-inactive">script.js</button>
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+        <!-- Editor Section -->
+        <div class="flex flex-col border-b md:border-b-0 md:border-r border-stone-800 w-full md:w-1/2 h-1/2 md:h-full relative transition-colors" id="editorPane">
+            <div class="flex bg-stone-900/50 p-1 gap-1 border-b border-stone-800 transition-colors" id="tabBar">
+                <button onclick="switchTab('html')" id="tab-html" class="tab-active px-4 py-2 text-xs font-bold rounded-t-lg transition-all">index.html</button>
+                <button onclick="switchTab('css')" id="tab-css" class="px-4 py-2 text-xs font-bold rounded-t-lg transition-all tab-inactive hover:opacity-80">styles.css</button>
+                <button onclick="switchTab('js')" id="tab-js" class="px-4 py-2 text-xs font-bold rounded-t-lg transition-all tab-inactive hover:opacity-80">script.js</button>
             </div>
 
-            <div class="editor-container bg-zinc-900/20">
+            <div class="editor-container bg-stone-900/10">
                 <div id="suggestionBox"></div>
                 <textarea id="htmlEditor" class="editor-textarea" placeholder="Ketik HTML..."></textarea>
                 <textarea id="cssEditor" class="editor-textarea hidden" placeholder="Ketik CSS..."></textarea>
@@ -177,21 +217,54 @@
             </div>
         </div>
 
-        <div class="flex-1 flex flex-col bg-white">
-            <div class="bg-zinc-100 px-4 py-1.5 text-[10px] text-zinc-500 flex justify-between border-b border-zinc-200 font-bold uppercase transition-colors" id="previewHeader">
-                <span>Live Preview</span>
-                <span id="previewIdentity">5-A | Absen: 1</span>
+        <!-- Live Preview Section -->
+        <div class="flex-1 flex flex-col bg-stone-200 dark:bg-stone-900 p-2 md:p-3 overflow-hidden transition-colors">
+            <div class="flex flex-col h-full rounded-xl shadow-2xl overflow-hidden border border-stone-300 dark:border-stone-800 bg-white">
+                
+                <!-- Chrome Header -->
+                <div class="chrome-header px-3 pt-2 flex flex-col gap-1 transition-colors">
+                    <div class="flex items-center gap-2">
+                        <div class="chrome-tab flex items-center gap-2 px-3 py-1.5 text-[11px] font-bold min-w-[120px] md:min-w-[140px] shadow-sm">
+                            <i data-lucide="globe" size="12" class="text-yellow-600"></i>
+                            <span id="chromeTabTitle" class="truncate">Preview Projek</span>
+                            <i data-lucide="x" size="10" class="ml-auto opacity-50 cursor-pointer"></i>
+                        </div>
+                        <div class="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-full cursor-pointer text-stone-500">
+                            <i data-lucide="plus" size="14"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3 py-1.5 px-1 bg-white dark:bg-[#292524] border-t border-stone-300 dark:border-stone-800 transition-colors">
+                        <div class="flex items-center gap-2 text-stone-500 px-1">
+                            <i data-lucide="arrow-left" size="14" class="opacity-30"></i>
+                            <i data-lucide="arrow-right" size="14" class="opacity-30"></i>
+                            <i data-lucide="rotate-ccw" size="14" class="cursor-pointer hover:text-yellow-600" onclick="runCode()"></i>
+                        </div>
+                        <div class="chrome-address-bar flex-1 flex items-center gap-2 px-3 py-1 text-[10px] md:text-[11px] text-stone-500 transition-colors">
+                            <i data-lucide="lock" size="11" class="text-emerald-600"></i>
+                            <span class="truncate opacity-70 font-bold">localhost:3000/preview</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Content -->
+                <div class="flex-1 bg-white relative">
+                    <iframe id="previewIframe"></iframe>
+                </div>
             </div>
-            <iframe id="previewIframe"></iframe>
         </div>
     </main>
 
-    <footer class="px-4 py-2 border-t border-zinc-800 bg-zinc-900 flex items-center justify-between text-xs text-zinc-500 transition-colors">
-        <div class="flex gap-4">
-            <span id="saveStatus">Ketik kodingmu dan tekan Jalankan</span>
+    <footer class="px-4 py-2 border-t border-stone-800 bg-stone-900 flex items-center justify-between text-[10px] md:text-xs text-stone-500 transition-colors">
+        <div class="flex gap-4 md:gap-6 items-center">
+            <span id="saveStatus" class="flex items-center gap-2 font-medium">
+                <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                <span class="hidden sm:inline">Siap menerima kode...</span>
+            </span>
+            <span id="previewIdentity" class="text-yellow-600 dark:text-yellow-400 font-bold bg-yellow-400/10 px-2 py-0.5 rounded border border-yellow-400/20">5-A | Absen: 1</span>
         </div>
-        <button onclick="downloadFile()" class="flex items-center gap-2 text-blue-500 hover:text-blue-400">
-            <i data-lucide="download" size="14"></i> Download File
+        <button onclick="downloadFile()" class="flex items-center gap-2 text-stone-500 dark:text-stone-400 hover:text-yellow-600 dark:hover:text-yellow-400 transition-colors font-bold">
+            <i data-lucide="download" size="14"></i> <span class="hidden sm:inline">Simpan ke Laptop</span>
         </button>
     </footer>
 
@@ -200,8 +273,9 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxILvtVwh9HMxNBtyKQ0sTuvj0l1RBAKibU9d9zb0rXCX8nyh2GUbWHV36mvsFGNivXCw/exec";
         
         const SUGGESTIONS = {
-            html: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span', 'a', 'img', 'button', 'input', 'form', 'label', 'ul', 'li', 'ol', 'section', 'header', 'footer', 'nav', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'br', 'hr', 'strong', 'em', 'iframe', 'canvas', 'svg', 'main', 'aside'],
-            css: ['background-color', 'background-image', 'border', 'border-radius', 'color', 'display', 'flex', 'font-family', 'font-size', 'font-weight', 'height', 'justify-content', 'align-items', 'margin', 'padding', 'position', 'text-align', 'text-decoration', 'width', 'z-index', 'cursor', 'opacity', 'overflow', 'transition', 'box-shadow']
+            html: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span', 'a', 'img', 'button', 'input', 'form', 'label', 'ul', 'li', 'ol', 'section', 'header', 'footer', 'nav', 'table', 'tr', 'td', 'th', 'thead', 'tbody', 'br', 'hr', 'strong', 'em', 'iframe', 'canvas', 'svg', 'main', 'aside', 'video', 'audio', 'source', 'details', 'summary', 'article', 'blockquote', 'code', 'pre', 'select', 'option', 'textarea', 'link', 'script', 'style', 'meta', 'title', 'head', 'body'],
+            css: ['background-color', 'background-image', 'background-size', 'background-position', 'background-repeat', 'border', 'border-radius', 'border-width', 'border-style', 'border-color', 'border-top', 'border-bottom', 'color', 'display', 'flex', 'grid', 'flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'font-family', 'font-size', 'font-weight', 'font-style', 'line-height', 'letter-spacing', 'height', 'width', 'max-height', 'max-width', 'min-height', 'min-width', 'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'position', 'top', 'right', 'bottom', 'left', 'z-index', 'cursor', 'opacity', 'overflow', 'overflow-x', 'overflow-y', 'transition', 'animation', 'transform', 'box-shadow', 'text-shadow', 'text-align', 'text-decoration', 'text-transform', 'visibility', 'float', 'clear', 'list-style', 'outline'],
+            js: ['console.log', 'alert', 'prompt', 'confirm', 'document.getElementById', 'document.querySelector', 'document.querySelectorAll', 'addEventListener', 'function', 'const', 'let', 'var', 'if', 'else', 'switch', 'case', 'break', 'default', 'for', 'while', 'forEach', 'map', 'filter', 'reduce', 'return', 'true', 'false', 'null', 'undefined', 'Array', 'Object', 'String', 'Number', 'Math.random', 'Math.floor', 'Math.round', 'setTimeout', 'setInterval', 'fetch', 'async', 'await', 'JSON.stringify', 'JSON.parse', 'window.onload', 'window.location', 'localStorage']
         };
 
         const editors = {
@@ -211,15 +285,16 @@
         };
         const suggestionBox = document.getElementById('suggestionBox');
 
-        // Update Font Size
         function updateFontSize() {
             const size = document.getElementById('fontSizeSelect').value;
-            Object.values(editors).forEach(editor => {
-                editor.style.fontSize = size;
-            });
+            Object.values(editors).forEach(editor => editor.style.fontSize = size);
         }
 
-        // Theme Toggle Logic
+        function updateFontFace() {
+            const font = document.getElementById('fontFamilySelect').value;
+            Object.values(editors).forEach(editor => editor.style.fontFamily = font);
+        }
+
         function toggleTheme() {
             const body = document.body;
             const icon = document.getElementById('themeIcon');
@@ -228,11 +303,11 @@
             if (body.classList.contains('dark-mode')) {
                 body.classList.replace('dark-mode', 'light-mode');
                 icon.setAttribute('data-lucide', 'sun');
-                themeBtn.classList.replace('text-zinc-400', 'text-amber-500');
+                themeBtn.classList.replace('text-stone-400', 'text-yellow-600');
             } else {
                 body.classList.replace('light-mode', 'dark-mode');
                 icon.setAttribute('data-lucide', 'moon');
-                themeBtn.classList.replace('text-amber-500', 'text-zinc-400');
+                themeBtn.classList.replace('text-yellow-600', 'text-stone-400');
             }
             lucide.createIcons();
         }
@@ -246,8 +321,7 @@
 
         function getCurrentLineIndent(text, pos) {
             const lines = text.substring(0, pos).split('\n');
-            const currentLine = lines[lines.length - 1];
-            const match = currentLine.match(/^\s*/);
+            const match = lines[lines.length - 1].match(/^\s*/);
             return match ? match[0] : "";
         }
 
@@ -256,77 +330,59 @@
                 const editor = e.target;
                 const pos = editor.selectionStart;
                 const value = editor.value;
-                
                 const charBefore = value.substring(pos - 1, pos);
                 const charAfter = value.substring(pos, pos + 1);
-                
                 const currentIndent = getCurrentLineIndent(value, pos);
                 const standardIndent = "  ";
 
-                const pairs = [
-                    ['>', '<'], 
-                    ['{', '}'], 
-                    ['(', ')'], 
-                    ['[', ']']  
-                ];
-
-                const isBetweenPair = pairs.some(p => charBefore === p[0] && charAfter === p[1]);
-
-                if (isBetweenPair) {
+                if ((charBefore === '>' && charAfter === '<') || (charBefore === '{' && charAfter === '}') || (charBefore === '(' && charAfter === ')') || (charBefore === '[' && charAfter === ']')) {
                     e.preventDefault();
-                    const newValue = value.substring(0, pos) + "\n" + currentIndent + standardIndent + "\n" + currentIndent + value.substring(pos);
-                    editor.value = newValue;
-                    const newPos = pos + currentIndent.length + standardIndent.length + 1;
-                    editor.selectionStart = editor.selectionEnd = newPos;
-                    runCode();
+                    editor.value = value.substring(0, pos) + "\n" + currentIndent + standardIndent + "\n" + currentIndent + value.substring(pos);
+                    editor.selectionStart = editor.selectionEnd = pos + currentIndent.length + standardIndent.length + 1;
                 } else {
                     e.preventDefault();
-                    const newValue = value.substring(0, pos) + "\n" + currentIndent + value.substring(pos);
-                    editor.value = newValue;
+                    editor.value = value.substring(0, pos) + "\n" + currentIndent + value.substring(pos);
                     editor.selectionStart = editor.selectionEnd = pos + currentIndent.length + 1;
-                    runCode();
                 }
+                runCode();
             }
         }
 
         Object.keys(editors).forEach(type => {
-            editors[type].addEventListener('keydown', (e) => handleEnterKey(e, type));
-            editors[type].addEventListener('input', () => {
-                handleSuggest(type);
-                runCode();
+            editors[type].addEventListener('keydown', (e) => {
+                if (suggestionBox.style.display === 'block' && (e.key === 'Tab' || e.key === 'Enter')) {
+                    const firstItem = suggestionBox.querySelector('.suggestion-item');
+                    if (firstItem) { e.preventDefault(); firstItem.click(); return; }
+                }
+                handleEnterKey(e, type);
             });
+            editors[type].addEventListener('input', () => { handleSuggest(type); runCode(); });
             editors[type].addEventListener('click', () => hideSuggestions());
         });
 
         function handleSuggest(type) {
-            if (type === 'js') return;
             const editor = editors[type];
             const textBefore = editor.value.substring(0, editor.selectionStart);
-            let query = '';
-            let triggerPos = -1;
+            let query = '', triggerPos = -1;
 
             if (type === 'html') {
                 triggerPos = textBefore.lastIndexOf('<');
-                if (triggerPos !== -1 && triggerPos >= textBefore.lastIndexOf('>')) {
-                    query = textBefore.substring(triggerPos + 1).toLowerCase();
-                }
-            } else if (type === 'css') {
-                const lines = textBefore.split(/\n|;|{/);
-                const lastLine = lines[lines.length - 1].trimStart();
-                query = lastLine.toLowerCase();
+                if (triggerPos !== -1 && triggerPos >= textBefore.lastIndexOf('>')) query = textBefore.substring(triggerPos + 1).toLowerCase();
+            } else {
+                const words = textBefore.split(/[\s.;{}[\]()]/);
+                query = words[words.length - 1].toLowerCase();
                 triggerPos = editor.selectionStart - query.length;
             }
 
-            if (query.length > 0 || (type === 'html' && textBefore.endsWith('<'))) {
-                const matches = SUGGESTIONS[type].filter(item => item.startsWith(query));
-                if (matches.length > 0) showSuggestions(matches, triggerPos, type);
-                else hideSuggestions();
+            if (query.length > 0) {
+                const matches = SUGGESTIONS[type].filter(item => item.toLowerCase().includes(query));
+                if (matches.length > 0) showSuggestions(matches, triggerPos, type); else hideSuggestions();
             } else hideSuggestions();
         }
 
         function showSuggestions(list, startPos, type) {
             suggestionBox.innerHTML = '';
-            list.forEach(item => {
+            list.slice(0, 10).forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'suggestion-item';
                 div.innerHTML = `<span>${item}</span> <span class="suggestion-type">${type}</span>`;
@@ -334,7 +390,7 @@
                 suggestionBox.appendChild(div);
             });
             suggestionBox.style.display = 'block';
-            suggestionBox.style.left = '10px';
+            suggestionBox.style.left = '20px';
             suggestionBox.style.top = '40px';
         }
 
@@ -344,54 +400,57 @@
             const editor = editors[type];
             const value = editor.value;
             const endPos = editor.selectionStart;
-            const before = value.substring(0, startPos);
-            const after = value.substring(endPos);
-            let insertText = (type === 'html') ? `<${item}></${item}>` : `${item}: ;`;
-            let cursorOffset = (type === 'html') ? item.length + 2 : item.length + 2;
+            const before = value.substring(0, startPos), after = value.substring(endPos);
+            let insertText = '', offset = 0;
+
+            if (type === 'html') { insertText = `<${item}></${item}>`; offset = item.length + 2; }
+            else if (type === 'css') { insertText = `${item}: ;`; offset = item.length + 2; }
+            else { insertText = item; offset = item.length; }
+            
             editor.value = before + insertText + after;
             hideSuggestions();
             editor.focus();
-            editor.setSelectionRange(startPos + cursorOffset, startPos + cursorOffset);
+            editor.setSelectionRange(startPos + offset, startPos + offset);
             runCode();
         }
 
         function switchTab(tab) {
             Object.values(editors).forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('[onclick^="switchTab"]').forEach(el => el.classList.remove('tab-active'));
-            document.querySelectorAll('[onclick^="switchTab"]').forEach(el => el.classList.add('tab-inactive'));
-            
+            document.querySelectorAll('[onclick^="switchTab"]').forEach(el => {
+                el.classList.replace('tab-active', 'tab-inactive');
+            });
             editors[tab].classList.remove('hidden');
-            document.getElementById('tab-' + tab).classList.add('tab-active');
-            document.getElementById('tab-' + tab).classList.remove('tab-inactive');
+            document.getElementById('tab-' + tab).classList.replace('tab-inactive', 'tab-active');
             hideSuggestions();
         }
 
         function runCode() {
             const iframe = document.getElementById('previewIframe');
-            iframe.srcdoc = `<!DOCTYPE html><html><head><style>${editors.css.value}</style></head><body>${editors.html.value}<script>try{${editors.js.value}}catch(e){console.error(e)}<\/script></body></html>`;
+            iframe.srcdoc = `<!DOCTYPE html><html><head><style>${editors.css.value}</style></head><body>${editors.html.value}<script>try{${editors.js.value}}catch(e){}<\/script></body></html>`;
             document.getElementById('previewIdentity').innerText = `${document.getElementById('classSelect').value} | Absen: ${document.getElementById('absentSelect').value}`;
+            document.getElementById('chromeTabTitle').innerText = document.getElementById('projectName').value || "Preview Projek";
         }
 
         async function sendToGoogleDrive() {
             const btn = document.getElementById('btnDrive');
             const originalHTML = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = 'Mengirim...';
+            btn.disabled = true; btn.innerHTML = 'Mengirim...';
             const payload = { projectName: document.getElementById('projectName').value, html: editors.html.value, css: editors.css.value, js: editors.js.value, class: document.getElementById('classSelect').value, absent: document.getElementById('absentSelect').value };
             try {
                 await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-                btn.classList.replace('bg-zinc-100', 'bg-green-600'); btn.classList.add('text-white'); btn.innerHTML = 'Terkirim!';
-                setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.replace('bg-green-600', 'bg-zinc-100'); btn.classList.remove('text-white'); btn.disabled = false; }, 3000);
+                btn.innerHTML = 'Terkirim!'; btn.classList.add('bg-yellow-400');
+                setTimeout(() => { btn.innerHTML = originalHTML; btn.classList.remove('bg-yellow-400'); btn.disabled = false; }, 3000);
             } catch (err) { btn.innerHTML = 'Gagal!'; setTimeout(() => { btn.innerHTML = originalHTML; btn.disabled = false; }, 3000); }
         }
 
         function downloadFile() {
             const content = `<!DOCTYPE html><html><head><style>${editors.css.value}</style></head><body>${editors.html.value}<script>${editors.js.value}<\/script></body></html>`;
-            const blob = new Blob([content], {type: 'text/html'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${document.getElementById('classSelect').value}_${document.getElementById('absentSelect').value}_${document.getElementById('projectName').value}.html`; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], {type: 'text/html'}));
+            a.download = `${document.getElementById('classSelect').value}_${document.getElementById('absentSelect').value}_${document.getElementById('projectName').value}.html`; a.click();
         }
 
         lucide.createIcons();
+        runCode();
     </script>
 </body>
 </html>
